@@ -294,6 +294,7 @@ function BunkerSilosHud:loadMap(name)
 	if ce and _G[ce] and _G[ce].g_i18n and _G[ce].g_i18n.getText then
 		self.mapI18n = _G[ce].g_i18n;
 	end;
+	self:debug(('ce=%q, mapI18n=%s'):format(tostring(ce), tostring(self.mapI18n)));
 
 	self.bgas = {};
 	self.bgaToBshData = {};
@@ -303,13 +304,12 @@ function BunkerSilosHud:loadMap(name)
 	self.siloTriggerIdToIdx = {};
 
 	self.tanks = {};
-	self.tempTankTriggers = {};
 	self.tanksIdentifiedById = {};
 
 	local bgaIdx = 0;
 	local bunkerSiloIdx = 0;
 	local liquidManureIdx = 0;
-	local farmLiquidManureIdx = nil;
+	local manureIdx = 0;
 
 	for k,v in pairs(g_currentMission.tipTriggers) do
 		if g_currentMission.tipTriggers[k] ~= nil then
@@ -344,7 +344,6 @@ function BunkerSilosHud:loadMap(name)
 					movingPlanes = {};
 					rottenFillLevel = 0;
 					rottenFillLevelPctFormatted = '0';
-					name = ('%s %.2d'):format(g_i18n:getText('BUNKERSILOS_SILO'), bunkerSiloIdx);
 				};
 				siloTable.boxWidth = (self.gui.boxAreaWidth - (siloTable.movingPlanesNum-1)*self.gui.boxMargin) / siloTable.movingPlanesNum;
 
@@ -361,77 +360,14 @@ function BunkerSilosHud:loadMap(name)
 					siloTable.name = self.mapI18n:getText('BSH_' .. name);
 					t.bshName = siloTable.name;
 					t.bunkerSilo.bshName = siloTable.name;
+				else
+					siloTable.name = ('%s %.2d'):format(g_i18n:getText('BUNKERSILOS_SILO'), bunkerSiloIdx);
 				end;
 
 				table.insert(self.silos, siloTable);
 				self.siloTriggerIdToIdx[t.triggerId] = bunkerSiloIdx;
 
 				self:debug(('add silo %d (triggerId %s, #movingPlanes=%d, name %q) / total: %d'):format(bunkerSiloIdx, tostring(t.triggerId), siloTable.movingPlanesNum, tostring(siloTable.name), #self.silos));
-
-			-- BGA liquid manure tank(s)
-			elseif t.bga ~= nil then
-				local triggerId = t.bga.liquidManureSiloTrigger.triggerId;
-				if not self.tanksIdentifiedById[triggerId] then
-					liquidManureIdx = liquidManureIdx + 1;
-					self.tempTankTriggers[liquidManureIdx] = v;
-
-					local tankTable = {
-						tankIdx = liquidManureIdx;
-						tankNum = liquidManureIdx;
-						triggerId = triggerId;
-						isBGA = true;
-						fillLevel = t.bga.liquidManureSiloTrigger.fillLevel;
-						fillLevelFormatted = '0';
-						fillLevelPct = 0;
-						fillLevelPctFormatted = '0';
-						capacity = t.bga.liquidManureSiloTrigger.capacity;
-						capacityFormatted = self:formatNumber(t.bga.liquidManureSiloTrigger.capacity, 0);
-						name = ('%s %.2d (%s)'):format(g_i18n:getText('BUNKERSILOS_TANK'), liquidManureIdx, g_i18n:getText('BUNKERSILOS_TANKTYPE_BGA'));
-					};
-
-					local name = getUserAttribute(triggerId, 'bshName');
-					if name ~= nil and self.mapI18n and self.mapI18n:hasText('BSH_' .. name) then
-						tankTable.name = self.mapI18n:getText('BSH_' .. name);
-						t.bga.liquidManureSiloTrigger.bshName = tankTable.name;
-					end;
-					tankTable.fillLevelTxtPosX = self.gui.contentMinX + getTextWidth(self.gui.fontSize, tankTable.name .. ':') + self.gui.buttonGfxWidth;
-
-					table.insert(self.tanks, tankTable);
-					self.tanksIdentifiedById[triggerId] = true;
-					self:debug(('add LiquidManureTank %s (triggerId %s, name %q) [BGA] / total: %s'):format(tostring(liquidManureIdx), tostring(triggerId), tostring(tankTable.name), tostring(#self.tanks)));
-				end;
-
-			-- Farm (cows) liquid manure tank
-			elseif t.animalHusbandry ~= nil and t.animalHusbandry.liquidManureTrigger ~= nil then
-				local triggerId = t.animalHusbandry.liquidManureTrigger.triggerId;
-				if not self.tanksIdentifiedById[triggerId] then
-					liquidManureIdx = liquidManureIdx + 1;
-					self.tempTankTriggers[liquidManureIdx] = v;
-					local tankTable = {
-						tipTriggersIdx = k;
-						tankIdx = liquidManureIdx;
-						tankNum = liquidManureIdx;
-						triggerId = triggerId;
-						isFarm = true;
-						fillLevel = t.animalHusbandry.liquidManureTrigger.fillLevel;
-						fillLevelFormatted = '0';
-						fillLevelPct = 0;
-						fillLevelPctFormatted = '0';
-						capacity = t.animalHusbandry.liquidManureTrigger.capacity;
-						capacityFormatted = self:formatNumber(t.animalHusbandry.liquidManureTrigger.capacity, 0);
-						name = ('%s %.2d (%s)'):format(g_i18n:getText('BUNKERSILOS_TANK'), liquidManureIdx, g_i18n:getText('BUNKERSILOS_TANKTYPE_COWS'));
-					};
-
-					local name = getUserAttribute(triggerId, 'bshName');
-					if name ~= nil and self.mapI18n and self.mapI18n:hasText('BSH_' .. name) then
-						tankTable.name = self.mapI18n:getText('BSH_' .. name);
-					end;
-					tankTable.fillLevelTxtPosX = self.gui.contentMinX + getTextWidth(self.gui.fontSize, tankTable.name .. ':') + self.gui.buttonGfxWidth;
-
-					table.insert(self.tanks, tankTable);
-					self.tanksIdentifiedById[triggerId] = true;
-					self:debug(('add LiquidManureTank %s (triggerId %s, name %q) [Farm] / total: %s'):format(tostring(liquidManureIdx), tostring(triggerId), tostring(tankTable.name), tostring(#self.tanks)));
-				end;
 			end;
 		end;
 	end; --END for
@@ -484,6 +420,111 @@ function BunkerSilosHud:loadMap(name)
 
 			self:debug(('add BGA %d (onCreateIndex %d, name %q) / total: %d'):format(bgaIdx, i, tostring(bgaTable.name), #self.bgas));
 
+			-- #####
+
+			-- BGA liquid manure tank(s)
+			if onCreateObject.liquidManureSiloTrigger ~= nil then
+				local trigger = onCreateObject.liquidManureSiloTrigger;
+				local triggerId = trigger.triggerId;
+				if not self.tanksIdentifiedById[triggerId] then
+					liquidManureIdx = liquidManureIdx + 1;
+
+					local tankTable = {
+						tankNum = liquidManureIdx;
+						onCreateIndex = i;
+						triggerId = triggerId;
+						isBGA = true;
+						fillLevel = trigger.fillLevel;
+						fillLevelFormatted = '0';
+						fillLevelPct = 0;
+						fillLevelPctFormatted = '0';
+						capacity = trigger.capacity;
+						capacityFormatted = self:formatNumber(trigger.capacity, 0);
+						name = ('%s %.2d (%s)'):format(g_i18n:getText('BUNKERSILOS_TANK'), liquidManureIdx, g_i18n:getText('BUNKERSILOS_TANKTYPE_BGA'));
+					};
+
+					local name = getUserAttribute(triggerId, 'bshName');
+					if name ~= nil and self.mapI18n and self.mapI18n:hasText('BSH_' .. name) then
+						tankTable.name = self.mapI18n:getText('BSH_' .. name);
+						trigger.bshName = tankTable.name;
+					end;
+					tankTable.fillLevelTxtPosX = self.gui.contentMinX + getTextWidth(self.gui.fontSize, tankTable.name .. ':') + self.gui.buttonGfxWidth;
+
+					table.insert(self.tanks, tankTable);
+					self.tanksIdentifiedById[triggerId] = true;
+					self:debug(('add LiquidManureTank %d (triggerId %s, name %q) [BGA] / total: %d'):format(liquidManureIdx, tostring(triggerId), tostring(tankTable.name), #self.tanks));
+				end;
+			end;
+
+
+		-- AnimalHusbandry [cows]
+		elseif onCreateObject.isa and onCreateObject:isa(AnimalHusbandry) then
+			-- liquid manure tank
+			if onCreateObject.liquidManureTrigger ~= nil then
+				local trigger = onCreateObject.liquidManureTrigger;
+				local triggerId = trigger.triggerId;
+				if not self.tanksIdentifiedById[triggerId] then
+					liquidManureIdx = liquidManureIdx + 1;
+					local tankTable = {
+						tipTriggersIdx = k;
+						tankNum = liquidManureIdx;
+						onCreateIndex = i;
+						triggerId = triggerId;
+						isCowsLiquidManure = true;
+						fillLevel = trigger.fillLevel;
+						fillLevelFormatted = '0';
+						fillLevelPct = 0;
+						fillLevelPctFormatted = '0';
+						capacity = trigger.capacity;
+						capacityFormatted = self:formatNumber(trigger.capacity, 0);
+						name = ('%s %.2d (%s)'):format(g_i18n:getText('BUNKERSILOS_TANK'), liquidManureIdx, g_i18n:getText('BUNKERSILOS_TANKTYPE_COWS'));
+					};
+
+					local name = getUserAttribute(triggerId, 'bshName');
+					if name ~= nil and self.mapI18n and self.mapI18n:hasText('BSH_' .. name) then
+						tankTable.name = self.mapI18n:getText('BSH_' .. name);
+					end;
+					tankTable.fillLevelTxtPosX = self.gui.contentMinX + getTextWidth(self.gui.fontSize, tankTable.name .. ':') + self.gui.buttonGfxWidth;
+
+					table.insert(self.tanks, tankTable);
+					self.tanksIdentifiedById[triggerId] = true;
+					self:debug(('add LiquidManureTank %d (triggerId %s, name %q) [cows] / total: %d'):format(liquidManureIdx, tostring(triggerId), tostring(tankTable.name), #self.tanks));
+				end;
+			end;
+
+			-- manure heap
+			if onCreateObject.manureHeap ~= nil then
+				local trigger = onCreateObject.manureHeap;
+				local triggerId = trigger.triggerId;
+				if not self.tanksIdentifiedById[triggerId] and trigger.capacity then
+					manureIdx = manureIdx + 1;
+					local tankTable = {
+						tipTriggersIdx = k;
+						tankNum = manureIdx;
+						onCreateIndex = i;
+						triggerId = triggerId;
+						isCowsManure = true;
+						fillLevel = trigger.fillLevel;
+						fillLevelFormatted = '0';
+						fillLevelPct = 0;
+						fillLevelPctFormatted = '0';
+						capacity = trigger.capacity;
+						capacityFormatted = self:formatNumber(trigger.capacity, 0);
+						name = ('%s %.2d (%s)'):format(g_i18n:getText('Manure_storage'), manureIdx, g_i18n:getText('BUNKERSILOS_TANKTYPE_COWS'));
+					};
+
+					local name = getUserAttribute(triggerId, 'bshName');
+					if name ~= nil and self.mapI18n and self.mapI18n:hasText('BSH_' .. name) then
+						tankTable.name = self.mapI18n:getText('BSH_' .. name);
+					end;
+					tankTable.fillLevelTxtPosX = self.gui.contentMinX + getTextWidth(self.gui.fontSize, tankTable.name .. ':') + self.gui.buttonGfxWidth;
+
+					table.insert(self.tanks, tankTable);
+					self.tanksIdentifiedById[triggerId] = true;
+					self:debug(('add ManureHeap %d (triggerId %s, name %q) [cows] / total: %d'):format(manureIdx, tostring(triggerId), tostring(tankTable.name), #self.tanks));
+				end;
+			end;
+
 
 		-- ManureLager tanks
 		elseif onCreateObject.ManureLagerDirtyFlag ~= nil or Utils.endsWith(onCreateObject.className, 'ManureLager') then
@@ -491,7 +532,6 @@ function BunkerSilosHud:loadMap(name)
 			if not self.tanksIdentifiedById[triggerId] then
 				liquidManureIdx = liquidManureIdx + 1;
 				local tankTable = {
-					tankIdx = liquidManureIdx;
 					tankNum = liquidManureIdx;
 					onCreateIndex = i;
 					isManureLager = true;
@@ -513,39 +553,87 @@ function BunkerSilosHud:loadMap(name)
 
 				self.tanks[#self.tanks + 1] = tankTable;
 				self.tanksIdentifiedById[triggerId] = true;
-				self:debug(('add LiquidManureTank %s (triggerId %s, name %q) [ManureLager] / total: %s'):format(tostring(liquidManureIdx), tostring(triggerId), tostring(tankTable.name), tostring(#self.tanks)));
+				self:debug(('add LiquidManureTank %d (triggerId %s, name %q) [ManureLager] / total: %d'):format(liquidManureIdx, tostring(triggerId), tostring(tankTable.name), #self.tanks));
 			end;
 
-		-- Pigs
-		elseif onCreateObject.numSchweine ~= nil and onCreateObject.liquidManureSiloTrigger ~= nil then
-			-- print(self:tableShow(onCreateObject, 'onCreateObject [pigs]'));
-			local triggerId = onCreateObject.liquidManureSiloTrigger.triggerId;
-			if triggerId and not self.tanksIdentifiedById[triggerId] then
-				liquidManureIdx = liquidManureIdx + 1;
-				local tankTable = {
-					tankIdx = liquidManureIdx;
-					tankNum = liquidManureIdx;
-					onCreateIndex = i;
-					isPigs = true;
-					fillLevel = onCreateObject.liquidManureSiloTrigger.fillLevel;
-					fillLevelFormatted = '0';
-					fillLevelPct = 0;
-					fillLevelPctFormatted = '0';
-					capacity = onCreateObject.liquidManureSiloTrigger.capacity;
-					capacityFormatted = self:formatNumber(onCreateObject.liquidManureSiloTrigger.capacity, 0);
-					name = ('%s %.2d (%s)'):format(g_i18n:getText('BUNKERSILOS_TANK'), liquidManureIdx, g_i18n:getText('BUNKERSILOS_TANKTYPE_PIGS'));
-				};
 
-				local name = getUserAttribute(triggerId, 'bshName');
-				if name ~= nil and self.mapI18n and self.mapI18n:hasText('BSH_' .. name) then
-					tankTable.name = self.mapI18n:getText('BSH_' .. name);
-					onCreateObject.bshName = tankTable.name;
+		-- Pigs/cattle [Schweinemast by marhu]
+		elseif onCreateObject.SchweineZuchtDirtyFlag and onCreateObject.numSchweine ~= nil then
+			-- liquid manure tank
+			if onCreateObject.liquidManureSiloTrigger ~= nil then
+				local trigger = onCreateObject.liquidManureSiloTrigger;
+				local triggerId = trigger.triggerId;
+				if triggerId and not self.tanksIdentifiedById[triggerId] then
+					liquidManureIdx = liquidManureIdx + 1;
+					local tankTable = {
+						tankNum = liquidManureIdx;
+						onCreateIndex = i;
+						isPigsLiquidManure = true;
+						fillLevel = trigger.fillLevel;
+						fillLevelFormatted = '0';
+						fillLevelPct = 0;
+						fillLevelPctFormatted = '0';
+						capacity = trigger.capacity;
+						capacityFormatted = self:formatNumber(trigger.capacity, 0);
+					};
+
+					local animalType = 'pigs';
+					local name = getUserAttribute(triggerId, 'bshName');
+					if name ~= nil and self.mapI18n and self.mapI18n:hasText('BSH_' .. name) then
+						tankTable.name = self.mapI18n:getText('BSH_' .. name);
+						onCreateObject.bshName = tankTable.name;
+					else
+						if onCreateObject.animal and onCreateObject.animal == 'beef' then
+							animalType = 'cattle';
+						end;
+						if onCreateObject.StationNr then
+							tankTable.name = ('%s (%s #%d)'):format(g_i18n:getText('BUNKERSILOS_TANK'), g_i18n:getText('BUNKERSILOS_TANKTYPE_' .. animalType:upper()), onCreateObject.StationNr);
+						else
+							tankTable.name = ('%s %.2d (%s)'):format(g_i18n:getText('BUNKERSILOS_TANK'), liquidManureIdx, g_i18n:getText('BUNKERSILOS_TANKTYPE_' .. animalType:upper()));
+						end;
+					end;
+					tankTable.fillLevelTxtPosX = self.gui.contentMinX + getTextWidth(self.gui.fontSize, tankTable.name .. ':') + self.gui.buttonGfxWidth;
+
+					table.insert(self.tanks, tankTable);
+					self.tanksIdentifiedById[triggerId] = true;
+					self:debug(('add LiquidManureTank %d (triggerId %s, name %q) [%s] / total: %d'):format(liquidManureIdx, tostring(triggerId), tostring(tankTable.name), animalType, #self.tanks));
 				end;
-				tankTable.fillLevelTxtPosX = self.gui.contentMinX + getTextWidth(self.gui.fontSize, tankTable.name .. ':') + self.gui.buttonGfxWidth;
+			end;
 
-				table.insert(self.tanks, tankTable);
-				self.tanksIdentifiedById[triggerId] = true;
-				self:debug(('add LiquidManureTank %s (triggerId %s, name %q) [Pigs] / total: %s'):format(tostring(liquidManureIdx), tostring(triggerId), tostring(tankTable.name), tostring(#self.tanks)));
+			-- manure heap [NOTE: SchweineZucht manure heap doesn't have a triggerId! -> no custom naming possible]
+			if onCreateObject.manureHeap ~= nil then
+				local trigger = onCreateObject.manureHeap;
+				if trigger.capacity then
+					manureIdx = manureIdx + 1;
+					local tankTable = {
+						tipTriggersIdx = k;
+						tankNum = manureIdx;
+						onCreateIndex = i;
+						-- triggerId = triggerId;
+						isPigsManure = true;
+						fillLevel = trigger.FillLvl;
+						fillLevelFormatted = '0';
+						fillLevelPct = 0;
+						fillLevelPctFormatted = '0';
+						capacity = trigger.capacity;
+						capacityFormatted = self:formatNumber(trigger.capacity, 0);
+					};
+
+					local animalType = 'pigs';
+					if onCreateObject.animal and onCreateObject.animal == 'beef' then
+						animalType = 'cattle';
+					end;
+					if onCreateObject.StationNr then
+						tankTable.name = ('%s (%s #%d)'):format(g_i18n:getText('Manure_storage'), g_i18n:getText('BUNKERSILOS_TANKTYPE_' .. animalType:upper()), onCreateObject.StationNr);
+					else
+						tankTable.name = ('%s %.2d (%s)'):format(g_i18n:getText('Manure_storage'), manureIdx, g_i18n:getText('BUNKERSILOS_TANKTYPE_' .. animalType:upper()));
+					end;
+					tankTable.fillLevelTxtPosX = self.gui.contentMinX + getTextWidth(self.gui.fontSize, tankTable.name .. ':') + self.gui.buttonGfxWidth;
+
+					table.insert(self.tanks, tankTable);
+					-- self.tanksIdentifiedById[triggerId] = true;
+					self:debug(('add ManureHeap %d (triggerId %s, name %q) [%s] / total: %d'):format(manureIdx, tostring(triggerId), tostring(tankTable.name), animalType, #self.tanks));
+				end;
 			end;
 		end;
 	end;
@@ -1149,7 +1237,7 @@ function BunkerSilosHud:renderSiloData(data)
 				end;
 
 				-- MP PCT TEXT
-				local text, fontSize = nil, g.fontSizeSmall;
+				local text, fontSize = nil, data.movingPlanesNum > 15 and g.fontSizeTiny or g.fontSizeSmall;
 				local showFillLevelPct, showCompactPct = false, false;
 				-- single mp's compact fillLevel (ImprovedSilageBunker)
 				if data.state == BunkerSilo.STATE_FILL and mp.compactFillLevelPct and mp.compactFillLevelPctFormatted then
@@ -1230,15 +1318,22 @@ function BunkerSilosHud:renderTankData(data)
 	local g = self.gui;
 
 	-- UPDATE TANK DATA
-	local fillLevel = 0;
+	local fillLevel;
 	if data.isBGA then
-		fillLevel = g_currentMission.tipTriggers[ self.tempTankTriggers[data.tankIdx] ].bga.liquidManureSiloTrigger.fillLevel;
-	elseif data.isFarm then
-		fillLevel = g_currentMission.tipTriggers[ self.tempTankTriggers[data.tankIdx] ].animalHusbandry.liquidManureTrigger.fillLevel;
+		fillLevel = g_currentMission.onCreateLoadedObjects[data.onCreateIndex].liquidManureSiloTrigger.fillLevel;
+	elseif data.isCowsLiquidManure then
+		fillLevel = g_currentMission.onCreateLoadedObjects[data.onCreateIndex].liquidManureTrigger.fillLevel;
+	elseif data.isCowsManure then
+		fillLevel = g_currentMission.onCreateLoadedObjects[data.onCreateIndex].manureHeap.fillLevel;
+	elseif data.isPigsLiquidManure then
+		fillLevel = g_currentMission.onCreateLoadedObjects[data.onCreateIndex].liquidManureSiloTrigger.fillLevel;
+	elseif data.isPigsManure then
+		fillLevel = g_currentMission.onCreateLoadedObjects[data.onCreateIndex].manureHeap.FillLvl;
 	elseif data.isManureLager then
 		fillLevel = g_currentMission.onCreateLoadedObjects[data.onCreateIndex].fillLevel;
-	elseif data.isPigs then
-		fillLevel = g_currentMission.onCreateLoadedObjects[data.onCreateIndex].liquidManureSiloTrigger.fillLevel;
+	end;
+	if not fillLevel then
+		return;
 	end;
 
 	if fillLevel ~= data.fillLevel then
@@ -1246,7 +1341,7 @@ function BunkerSilosHud:renderTankData(data)
 		data.fillLevelFormatted = self:formatNumber(data.fillLevel, 0);
 		data.fillLevelPct = data.fillLevel / data.capacity + 0.00001;
 		data.fillLevelPctFormatted = self:formatNumber(data.fillLevelPct * 100, 1);
-		-- self:debug(string.format('BSH tank %q: updated fillLevel: fillLevelFormatted=%q, fillLevelPctFormatted=%q', data.name, data.fillLevelFormatted, data.fillLevelPctFormatted));
+		self:debug(('BSH tank %q: updated fillLevel: fillLevelFormatted=%q, fillLevelPctFormatted=%q'):format(data.name, data.fillLevelFormatted, data.fillLevelPctFormatted));
 	end;
 
 	-- RENDER TANK DATA

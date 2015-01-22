@@ -242,10 +242,17 @@
 		</text>
 		<text name="BUNKERSILOS_TANKTYPE_PIGS">
 			<en>pigs</en>
-			<de>Schweinemast</de>
+			<de>Schweine</de>
 			<es>cerdos</es>
 			<fr>porcs</fr>
 			<it>suini</it>
+		</text>
+		<text name="BUNKERSILOS_TANKTYPE_CATTLE">
+			<en>cattle</en>
+			<de>Rinder</de>
+			<es>vacunos</es>
+			<fr>bovins</fr>
+			<it>bovini</it>
 		</text>
 		<text name="BUNKERSILOS_NOTANKS">
 			<en>No liquid manure tank data available</en>
