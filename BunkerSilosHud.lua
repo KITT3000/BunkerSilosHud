@@ -10,17 +10,17 @@
 -- 					0.99 (02 Mar 2014): * add safety check against impromperly created BunkerSilo triggers (w/o movingPlanes) - you know who you are!
 --										* add warning sign if silo is fully fermented but the cover plane hasn't been removed yet
 --										* fix scrolling functionality/zooming inhibit for vehicles with 'InteractiveControl' spec
---					2.0  (14 Jan 2014): * conversion to FS15
+--					2.0  (14 Jan 2015): * conversion to FS15
 --										* GUI update
 --										* add BGA data (especially BGAextension): bunker fill level, bunker/fermenter dry matter, current and historic generator power
 --										* add MP/DS support
 -- @contact:		jakobgithub -ätt- gmail -dot- com
 -- @note:			Modification, upload, distribution or any other change without the author's written permission is not allowed.
 -- @thanks:			Peter van der Veen and Claus G. Pedersen, for testing the English version
---					upsidedown, for the camera movement function and testing
+--					upsidedown, for the camera movement function and general testing
 --					upsidedown and mor2000 for multiplayer testing
 --
--- Copyright (C) 2014 Jakob Tischler
+-- Copyright (C) 2014-2015 Jakob Tischler
 -- 
 
 --[[
