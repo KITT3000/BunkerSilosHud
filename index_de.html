@@ -1,0 +1,194 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="chrome=1">
+	<title>BunkerSilosHud by Jakob Tischler</title>
+	<link rel="stylesheet" href="stylesheets/styles.css">
+	<link rel="stylesheet" href="stylesheets/pygment_trac.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script src="javascripts/respond.js"></script>
+	<!--[if lt IE 9]>
+	  <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<!--[if lt IE 8]>
+	<link rel="stylesheet" href="stylesheets/ie.css">
+	<![endif]-->
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+</head>
+
+
+<body>
+	<div id="header">
+		<nav>
+			<li class="title">DOWNLOAD</li>
+			<li class="downloads" id="downloadModhoster"><a href="http://www.modhoster.de/mods/bunker-silos-hud">Modhoster</a></li>
+			<li class="downloads" id="downloadFSUK"><a href="http://fs-uk.com/mods/view/35792">FS-UK</a></li>
+		</nav>
+
+		<div id="languageSelection">
+			<span class="languageLink" id="german">Deutsch</span>
+			<a class="languageLink" href="index.html" id="german">English</a>
+		</div>
+	</div><!-- end header -->
+
+	<div class="wrapper">
+		<section>
+			<div id="title">
+				<h1>
+					<img src="images/bshTitleWhite_v2.1.png" alt="BunkerSilosHud" />
+				</h1>
+				<p></p>
+				<hr>
+				<span class="credits left">Ein Mod für den Landwirtschatssimulator von <a href="https://github.com/JakobTischler">Jakob Tischler</a></span>
+			</div>
+
+			<!-- ## FUNCTIONS -->
+			<article>
+				<h3>
+					<a id="functions" class="anchor" href="#functions" aria-hidden="true"><span class="octicon octicon-link"></span></a>Funktion
+				</h3>
+
+				<p>Das BunkerSilosHud zeigt die Füllstände der Bunkersilos, deren Status, die Verteilung der einzelnen Abschnitte usw. an. Es unterstützt auch die zusätzlichen Features des <a href="http://www.modhoster.de/mods/fahrsiloextension--2" title="FahrSiloExtension @ ModHoster">FahrSiloExtension</a>-Scripts, also quasi das Verrotten/Verschimmeln und die Verdichtung der einzelnen Sektionen.</p>
+				<p>Zusätlich wird der Bunkerfüllstand der BGA angezeigt. Wenn upsidedown's <a href="http://www.modhoster.de/mods/bgaextension--2" title="BGAextension @ ModHoster">BGAextension</a> installiert ist, werden weitere Informationen wie Trockensubstanz-Werte, Bonusfüllstände, Leistung, Fütterungsrate und ein Diagramm der Leistung der vergangenen 48 Stunden angezeigt.</p>
+				<p>Des Weiteren werden die Füllstände der Gülletanks angegeben. Hier werden zusätzlich zu den Standardtanks (Kuh/BGA) auch Marhu's Schweinemast und skydancer's ManureLager unterstützt.</p>
+			</article>
+
+			<hr />
+
+			<!-- ## USAGE -->
+			<article>
+				<h3>
+					<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Benutzung
+				</h3>
+
+				<p>Die Bedienung funktioniert via Maus (Button-Click auf die Pfeile oder Scrollen). Wenn gescrollt werden kann wird in der oberen rechten Ecke des Huds ein Mausrad-Symbol angezeigt.</p>
+				<p>
+					Es gibt drei Status des Huds, die jeweils über die Tastenkombination <code>Strg (links) + B</code> gesetzt werden:
+					<ol>
+						<li>Geöffnet, Mausfunktion aktiv. Hier wird gleichzeit die Mausfunktion der Fahrzeugkamera deaktiviert (Kamera bewegen und zoomen).</li>
+						<li>Geöffnet, Mausfunktion inaktiv. Zur reinen Ansicht, Silos oder Gülletanks können nicht geändert werden. Die Mausfunktion der Fahrzeugkamera ist wieder aktiviert.</li>
+						<li>Geschlossen. Mausfunktion der Fahrzeugkamera ist aktiviert.</li>
+					</ol>
+				</p>
+			</article>
+
+			<hr />
+
+			<!-- ## CUSTOM NAMING -->
+			<article>
+				<h3>
+					<a id="customNaming" class="anchor" href="#customNaming" aria-hidden="true"><span class="octicon octicon-link"></span></a>Namensgebung
+					<span class="info">(Kenntnisse im Giants Editor und XML-Editierung vorausgesetzt!)</span>
+				</h3>
+
+				<p>Die einzelnen Silos und Gülletanks können individuell über ein <code>userAttribute</code> in der Map benannt werden (i18n-unterstützt). Diese Namen werden auch als XML-Eintrag im jeweiligen Silo in der <code>vehicles.xml</code> des Savegames gespeichert.</p>
+
+				<h4>Beispiel für die Namensgebung</h4>
+				<div>
+					<table>
+						<thead>
+							<tr>
+								<th colspan="2">userAttribute</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>Name</td>
+								<td><code>bshName</code></td>
+							</tr>
+							<tr>
+								<td>Typ</td>
+								<td><code>string</code></td>
+							</tr>
+							<tr>
+								<td>Ort</td>
+								<td>im <code>tipTrigger</code> des Silos / im <code>liquidManureTrigger</code> des Gülletanks</code></td>
+							</tr>
+							<tr>
+								<td>Inhalt</td>
+								<td><code>FarmPigs</code></td>
+							</tr>
+						</tbody>
+					</table>
+
+					<table>
+						<thead>
+							<tr>
+								<th colspan="2">modDesc.xml l10n</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>Name</td>
+								<td><code>BSH_FarmPigs</code><br /><br />(<code>BSH_</code> und Inhalt des <code>userAttributes</code>)</td>
+							</tr>
+							<tr>
+								<td>Inhalt</td>
+								<td><pre><code>&lt;text name="BSH_FarmPigs">
+	&lt;en>Farm pigs liquid manure&lt;/en>
+	&lt;de>Hof Schweinemast Gülle&lt;/de>
+&lt;/text></code></pre>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</article>
+
+			<hr />
+
+			<!-- ## CHANGELOG -->
+			<article>
+				<h3>
+					<a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span class="octicon octicon-link"></span></a>Changelog
+				</h3>
+
+				<h4>v2.1 (26 Jan 2015)</h4>
+				<ul>
+					<li>Unterstützung für Misthaufen</li>
+					<li>Unterscheidung zwischen Schweinen und Rindern hinzugefügt (Schweinemast von marhu)</li>
+					<li>Hud ist via Drag-und-Drop verschiebbar</li>
+				</ul>
+				<br />
+
+				<h4>v2.0 (14 Jan 2015)</h4>
+				<ul>
+					<li>Konvertierung zu LS15</li>
+					<li>GUI-Update</li>
+					<li>BGA-Daten hinzugefügt (speziell BGAextension): Bunkerfüllstand, Bunker-/Fermenter-Trockensubstanz, aktuelle und bisherige Generatorleistung</li>
+					<li>MP/DS-Unterstützung</li>
+				</ul>
+				<br />
+				<h4>v0.99 (02 Mar 2014)</h4>
+				<ul>
+					<li>Sicherheitsabfrage gegen falsch implementierte BunkerSilo-Trigger (ohne movingPlanes) &mdash; you know who you are!</li>
+					<li>Warnzeichen falls Silo voll fermentiert aber noch zugedeckt ist</li>
+					<li>Scroll-Funktion/Zoom-Unterdrückung für Fahrzeuge mit 'InteractiveControl' spec</li>
+				</ul>
+				<br />
+				<h4>v0.98 (25 Feb 2014)</h4>
+				<ul>
+					<li>Erstes Release</li>
+				</ul>
+			</article>
+
+			<hr />
+
+			<!-- ## COPYRIGHT -->
+			<article>
+				<h3>
+					<a id="copyright" class="anchor" href="#copyright" aria-hidden="true"><span class="octicon octicon-link"></span></a>Copyright
+				</h3>
+
+				<p>Keine Veränderung ohne die schriftliche Genehmigung des Autors. Kein erneutes Hochladen erlaubt. Nicht für kommerzielle Benutzung erlaubt.</p>
+				<p>Copyright © Jakob Tischler, 2014&ndash;2015</p>
+			</article>
+		</section>
+
+	</div>
+
+	<!--[if !IE]><script>fixScale(document);</script><![endif]-->
+</body>
+</html>
