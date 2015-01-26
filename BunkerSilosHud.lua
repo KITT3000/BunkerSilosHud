@@ -3,7 +3,7 @@
 --
 -- @description:	A hud that shows the contents of all silos (BGA and cow), including the distribution inside each silo, plus the fill levels of all liquid manure tanks and some BGA data.
 -- @author:			Jakob Tischler
--- @project start:	13 Jan 2013
+-- @project start:	13 Jan 2014
 -- @date:			26 Jan 2015
 -- @version:		2.1
 -- @history:		0.98 (25 Feb 2014): * initial release
@@ -819,12 +819,11 @@ function BunkerSilosHud:moveGui(dx, dy)
 	self.gui.dragDropMouseDown = nil;
 end;
 
-function BunkerSilosHud:dragDropUpdateBackground(posX, posY)
+function BunkerSilosHud:dragDropUpdateBackground(dx, dy)
 	if not self.gui.background.hasDragDropColor then
 		self.gui.background:setColor(1, 0, 0, 0.6);
 		self.gui.background.hasDragDropColor = true;
 	end;
-	local dx, dy = posX - self.gui.dragDropMouseDown[1], posY - self.gui.dragDropMouseDown[2];
 	self.gui.background:setPosition(self.gui.background.origPos[1] + dx, self.gui.background.origPos[2] + dy);
 end;
 
@@ -1577,7 +1576,8 @@ function BunkerSilosHud:mouseEvent(posX, posY, isDown, isUp, mouseButton)
 
 	-- DRAG AND DROP MOVEMENT
 	elseif not isUp and not isDown and self.gui.dragDropMouseDown then
-		self:dragDropUpdateBackground(posX, posY);
+		local dx, dy = posX - self.gui.dragDropMouseDown[1], posY - self.gui.dragDropMouseDown[2];
+		self:dragDropUpdateBackground(dx, dy);
 
 	-- HOVERING / SCROLLING
 	elseif not isDown then
