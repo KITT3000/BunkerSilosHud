@@ -4,8 +4,8 @@
 -- @description:	A hud that shows the contents of all silos (BGA and cow), including the distribution inside each silo, plus the fill levels of all liquid manure tanks and some BGA data.
 -- @author:			Jakob Tischler
 -- @project start:	13 Jan 2013
--- @date:			14 Jan 2014
--- @version:		2.0
+-- @date:			26 Jan 2015
+-- @version:		2.1
 -- @history:		0.98 (25 Feb 2014): * initial release
 -- 					0.99 (02 Mar 2014): * add safety check against impromperly created BunkerSilo triggers (w/o movingPlanes) - you know who you are!
 --										* add warning sign if silo is fully fermented but the cover plane hasn't been removed yet
@@ -14,6 +14,9 @@
 --										* GUI update
 --										* add BGA data (especially BGAextension): bunker fill level, bunker/fermenter dry matter, current and historic generator power
 --										* add MP/DS support
+--					2.1  (26 Jan 2015): * add support for manure heaps
+--										* add distinction between pigs and cattle
+--										* hud is now draggable via drag+drop
 -- @contact:		jakobgithub -ätt- gmail -dot- com
 -- @note:			Modification, upload, distribution or any other change without the author's written permission is not allowed.
 -- @thanks:			Peter van der Veen and Claus G. Pedersen, for testing the English version
@@ -157,34 +160,11 @@ function BunkerSilosHud:loadMap(name)
 
 	local horizontalMargin = pxToNormal(16, 'x');
 	self.gui.x1 = getFullPx(1 - self.gui.width - horizontalMargin, 'x');
-	self.gui.x2 = self.gui.x1 + self.gui.width;
 	self.gui.y1 = pxToNormal(390, 'y');
-	self.gui.y2 = self.gui.y1 + self.gui.height;
-
-	self.gui.contentMinX = self.gui.x1 + self.gui.hPadding;
-	self.gui.contentMaxX = self.gui.x1 + self.gui.width - self.gui.hPadding;
-	self.gui.contentCenterX = self.gui.x1 + self.gui.width * 0.5;
 
 	self.gui.boxAreaWidth = self.gui.width - (2 * self.gui.hPadding);
 	self.gui.boxMargin = pxToNormal(3, 'x');
 	self.gui.boxMaxHeight = pxToNormal(44, 'y');
-
-	self.gui.upperLineY = self.gui.y1 + pxToNormal(210, 'y');
-
-	self.gui.lines = {};
-	-- Main title
-	self.gui.lines[0] = self.gui.y1 + pxToNormal(212, 'y');
-	-- Silos / BGA
-	self.gui.lines[1] = self.gui.lines[0] - pxToNormal(22, 'y');
-	self.gui.lines[2] = self.gui.lines[1] - pxToNormal(20, 'y');
-	self.gui.lines[3] = self.gui.lines[2] - pxToNormal(20, 'y');
-	self.gui.lines[4] = self.gui.lines[3] - pxToNormal(20, 'y');
-	self.gui.lines[5] = self.gui.lines[4] - pxToNormal(20, 'y');
-	self.gui.lines[6] = self.gui.y1 + pxToNormal(61, 'y');
-	-- Liquid manure tanks
-	self.gui.lines[7] = self.gui.y1 + pxToNormal(42, 'y');
-	self.gui.lines[8] = self.gui.lines[7] - pxToNormal(20, 'y');
-
 
 	self.gui.colors = {
 		default 			= self:rgba( 33, 48, 24, 1.0),
@@ -202,32 +182,6 @@ function BunkerSilosHud:loadMap(name)
 	-- fill bar graph
 	self.gui.barHeight = pxToNormal(14, 'y');
 	self.gui.barBorderWidth = pxToNormal(4, 'x');
-	self.gui.barBorderRightPosX = self.gui.contentMaxX - self.gui.barBorderWidth;
-	self.gui.barMaxX = self.gui.contentMaxX - (self.gui.barBorderWidth * 2);
-
-	-- Liquid manure tank bar graph
-	self.gui.tankBarBorderLeftPosX = self.gui.contentMinX;
-	self.gui.tankBarMinX = self.gui.tankBarBorderLeftPosX + (self.gui.barBorderWidth * 2);
-	self.gui.tankBarMaxWidth = self.gui.barMaxX - self.gui.tankBarMinX;
-
-	-- BGA bunker fill level bar graph
-	local text = g_i18n:getText('BUNKERSILOS_BGA_BUNKERFILLLEVEL'):format('00,0', '00,0', '100,0');
-	if self.complexBgaInstalled then
-		self.gui.bgaBunkerFillLevelBarBorderLeftPosX, self.gui.bgaBunkerFillLevelBarMinX, self.gui.bgaBunkerFillLevelBarMaxWidth = self:getBarDimensionsFromPrecedingText(text);
-	else
-		self.gui.bgaBunkerFillLevelBarBorderLeftPosX, self.gui.bgaBunkerFillLevelBarMinX, self.gui.bgaBunkerFillLevelBarMaxWidth = self.gui.tankBarBorderLeftPosX, self.gui.tankBarMinX, self.gui.tankBarMaxWidth;
-	end;
-
-	-- BGA fermenter TS bar graph
-	local text = g_i18n:getText('BUNKERSILOS_BGA_FERMENTERTS'):format('00,00');
-	self.gui.bgaFermenterDrySubstanceBarBorderLeftPosX, self.gui.bgaFermenterDrySubstanceBarMinX, self.gui.bgaFermenterDrySubstanceBarMaxWidth = self:getBarDimensionsFromPrecedingText(text);
-	local maxDS, optimumDS = 0.16, 0.1;
-	local optimumRelativePct = optimumDS / maxDS;
-	self.gui.bgaFermenterDrySubstanceBarOptimumPosX = self.gui.bgaFermenterDrySubstanceBarMinX + (self.gui.bgaFermenterDrySubstanceBarMaxWidth * optimumRelativePct) - (self.gui.barBorderWidth * 0.5);
-
-	-- BGA bunker bonus fill level bar graph
-	local text = ("%s: 100'000/100'000 %s (100.0%%)"):format(g_i18n:getText('BUNKERSILOS_BGA_BUNKERBONUS'), g_i18n:getText('fluid_unit_short'));
-	self.gui.bgaBunkerBonusFillLevelBarBorderLeftPosX, self.gui.bgaBunkerBonusFillLevelBarMinX, self.gui.bgaBunkerBonusFillLevelBarMaxWidth = self:getBarDimensionsFromPrecedingText(text);
 
 	local imgPath = 'dataS2/menu/white.png';
 	self.barOverlayId = createImageOverlay(imgPath);
@@ -251,36 +205,25 @@ function BunkerSilosHud:loadMap(name)
 	};
 
 	local gfxPath = Utils.getFilename('bshHud.png', BunkerSilosHud.imgDir);
-	self.gui.background = Overlay:new('bshBackground', gfxPath, self.gui.x1, self.gui.y1, self.gui.width, self.gui.height);
-	self.gui.effects =    Overlay:new('bshFx',		   gfxPath, self.gui.x1, self.gui.y1, self.gui.width, self.gui.height);
+	self.gui.background = Overlay:new('bshBackground', gfxPath, 0, 0, self.gui.width, self.gui.height);
+	self.gui.effects =    Overlay:new('bshFx',		   gfxPath, 0, 0, self.gui.width, self.gui.height);
 	self:setOverlayUVsPx(self.gui.background, { 6,250, 506,  6 }, 512,512);
 	self:setOverlayUVsPx(self.gui.effects,    { 6,506, 506,262 }, 512,512);
-
-	--							x1					  x2					y1				   y2
-	self.gui.topSectionArea = { self.gui.contentMinX, self.gui.contentMaxX, self.gui.lines[6], self.gui.lines[1] + self.gui.buttonGfxHeight };
-	self.gui.tankArea		= { self.gui.contentMinX, self.gui.contentMaxX, self.gui.lines[8], self.gui.lines[7] + self.gui.buttonGfxHeight };
-
-	self.gui.topIconsPosX = {
-		[1] = self.gui.contentMaxX - self.gui.buttonGfxWidth * 3.2;
-		[2] = self.gui.contentMaxX - self.gui.buttonGfxWidth * 2.2;
-		[3] = self.gui.contentMaxX - self.gui.buttonGfxWidth;
-	};
-
 
 	self.gui.buttons = {};
 
 	-- mouse wheel icon
-	self.gui.mouseWheel = Overlay:new('bshMouse', self.gui.iconFilePath, self.gui.topIconsPosX[1], self.gui.upperLineY, self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
+	self.gui.mouseWheel = Overlay:new('bshMouse', self.gui.iconFilePath, 0, 0, self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
 	self:setOverlayUVsPx(self.gui.mouseWheel, self.gui.iconUVs.mouse, self.gui.iconFileSize[1], self.gui.iconFileSize[2]);
 
 	-- warning icon
-	self.gui.warning = Overlay:new('bshWarning', self.gui.iconFilePath, self.gui.topIconsPosX[2], self.gui.upperLineY, self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
+	self.gui.warning = Overlay:new('bshWarning', self.gui.iconFilePath, 0, 0, self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
 	self:setOverlayUVsPx(self.gui.warning, self.gui.iconUVs.warning, self.gui.iconFileSize[1], self.gui.iconFileSize[2]);
 	self.displayWarning = false;
 	self.blinkLength = 500; -- in ms
 
 	-- close button
-	self.gui.closeHudButton = BshButton:new('closeHud', 'setHudState', BunkerSilosHud.HUDSTATE_CLOSED, self.gui.topIconsPosX[3], self.gui.upperLineY, self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
+	self.gui.closeHudButton = BshButton:new('closeHud', 'setHudState', BunkerSilosHud.HUDSTATE_CLOSED, 0, 0, self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
 
 	-- ################################################################################
 
@@ -349,7 +292,7 @@ function BunkerSilosHud:loadMap(name)
 
 				for i=1, siloTable.movingPlanesNum do
 					local movingPlane = {};
-					movingPlane.boxX = self.gui.contentMinX + (i-1)*(siloTable.boxWidth + self.gui.boxMargin);
+					movingPlane.boxX = 0;
 					movingPlane.boxCenterX = movingPlane.boxX + siloTable.boxWidth * 0.5;
 
 					table.insert(siloTable.movingPlanes, movingPlane);
@@ -390,7 +333,7 @@ function BunkerSilosHud:loadMap(name)
 				self:debug('    isComplexBga = true');
 				bgaTable.isComplexBga = true;
 				bgaTable.tsGraphNumValues = 48; -- 48 hours -- prev: 1 point per hour, 5 days
-				local posX, posY = self.gui.contentMinX, self.gui.lines[6];
+				local posX, posY = 0, 0;
 				local width = self.gui.boxAreaWidth * ((bgaTable.tsGraphNumValues - 1) / bgaTable.tsGraphNumValues);
 				local height = self.gui.boxMaxHeight;
 				local minValue, maxValue = 0, 500;
@@ -448,7 +391,7 @@ function BunkerSilosHud:loadMap(name)
 						tankTable.name = self.mapI18n:getText('BSH_' .. name);
 						trigger.bshName = tankTable.name;
 					end;
-					tankTable.fillLevelTxtPosX = self.gui.contentMinX + getTextWidth(self.gui.fontSize, tankTable.name .. ':') + self.gui.buttonGfxWidth;
+					tankTable.fillLevelTxtPosX = 0;
 
 					table.insert(self.tanks, tankTable);
 					self.tanksIdentifiedById[triggerId] = true;
@@ -484,7 +427,7 @@ function BunkerSilosHud:loadMap(name)
 					if name ~= nil and self.mapI18n and self.mapI18n:hasText('BSH_' .. name) then
 						tankTable.name = self.mapI18n:getText('BSH_' .. name);
 					end;
-					tankTable.fillLevelTxtPosX = self.gui.contentMinX + getTextWidth(self.gui.fontSize, tankTable.name .. ':') + self.gui.buttonGfxWidth;
+					tankTable.fillLevelTxtPosX = 0;
 
 					table.insert(self.tanks, tankTable);
 					self.tanksIdentifiedById[triggerId] = true;
@@ -517,7 +460,7 @@ function BunkerSilosHud:loadMap(name)
 					if name ~= nil and self.mapI18n and self.mapI18n:hasText('BSH_' .. name) then
 						tankTable.name = self.mapI18n:getText('BSH_' .. name);
 					end;
-					tankTable.fillLevelTxtPosX = self.gui.contentMinX + getTextWidth(self.gui.fontSize, tankTable.name .. ':') + self.gui.buttonGfxWidth;
+					tankTable.fillLevelTxtPosX = 0;
 
 					table.insert(self.tanks, tankTable);
 					self.tanksIdentifiedById[triggerId] = true;
@@ -549,7 +492,7 @@ function BunkerSilosHud:loadMap(name)
 					tankTable.name = self.mapI18n:getText('BSH_' .. name);
 					onCreateObject.bshName = tankTable.name;
 				end;
-				tankTable.fillLevelTxtPosX = self.gui.contentMinX + getTextWidth(self.gui.fontSize, tankTable.name .. ':') + self.gui.buttonGfxWidth;
+				tankTable.fillLevelTxtPosX = 0;
 
 				self.tanks[#self.tanks + 1] = tankTable;
 				self.tanksIdentifiedById[triggerId] = true;
@@ -592,7 +535,7 @@ function BunkerSilosHud:loadMap(name)
 							tankTable.name = ('%s %.2d (%s)'):format(g_i18n:getText('BUNKERSILOS_TANK'), liquidManureIdx, g_i18n:getText('BUNKERSILOS_TANKTYPE_' .. animalType:upper()));
 						end;
 					end;
-					tankTable.fillLevelTxtPosX = self.gui.contentMinX + getTextWidth(self.gui.fontSize, tankTable.name .. ':') + self.gui.buttonGfxWidth;
+					tankTable.fillLevelTxtPosX = 0;
 
 					table.insert(self.tanks, tankTable);
 					self.tanksIdentifiedById[triggerId] = true;
@@ -628,7 +571,7 @@ function BunkerSilosHud:loadMap(name)
 					else
 						tankTable.name = ('%s %.2d (%s)'):format(g_i18n:getText('Manure_storage'), manureIdx, g_i18n:getText('BUNKERSILOS_TANKTYPE_' .. animalType:upper()));
 					end;
-					tankTable.fillLevelTxtPosX = self.gui.contentMinX + getTextWidth(self.gui.fontSize, tankTable.name .. ':') + self.gui.buttonGfxWidth;
+					tankTable.fillLevelTxtPosX = 0;
 
 					table.insert(self.tanks, tankTable);
 					-- self.tanksIdentifiedById[triggerId] = true;
@@ -654,8 +597,8 @@ function BunkerSilosHud:loadMap(name)
 			for k,v in ipairs(self.bgas) do
 				v.bgaNum = k;
 			end;
-			self.gui.changeBgaNegButton = BshButton:new('arrowLeft', 'changeBga', -1, self.gui.contentMinX, self.gui.lines[1], self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
-			self.gui.changeBgaPosButton = BshButton:new('arrowRight', 'changeBga', 1, self.gui.contentMaxX - self.gui.buttonGfxWidth, self.gui.lines[1], self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
+			self.gui.changeBgaNegButton = BshButton:new('arrowLeft', 'changeBga', -1, 0, 0, self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
+			self.gui.changeBgaPosButton = BshButton:new('arrowRight', 'changeBga', 1, 0, 0, self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
 		end;
 	else
 		self.activeBga = false;
@@ -679,8 +622,8 @@ function BunkerSilosHud:loadMap(name)
 				v.bunkerSiloNum = k;
 			end;
 
-			self.gui.changeSiloNegButton = BshButton:new('arrowLeft', 'changeSilo', -1, self.gui.contentMinX, self.gui.lines[1], self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
-			self.gui.changeSiloPosButton = BshButton:new('arrowRight', 'changeSilo', 1, self.gui.contentMaxX - self.gui.buttonGfxWidth, self.gui.lines[1], self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
+			self.gui.changeSiloNegButton = BshButton:new('arrowLeft', 'changeSilo', -1, 0, 0, self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
+			self.gui.changeSiloPosButton = BshButton:new('arrowRight', 'changeSilo', 1, 0, 0, self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
 		end;
 	else
 		self.activeSilo = false;
@@ -697,8 +640,8 @@ function BunkerSilosHud:loadMap(name)
 				v.tankNum = k;
 			end;
 
-			self.gui.changeTankNegButton = BshButton:new('arrowLeft', 'changeTank', -1, self.gui.contentMinX, self.gui.lines[7], self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
-			self.gui.changeTankPosButton = BshButton:new('arrowRight', 'changeTank', 1, self.gui.contentMaxX - self.gui.buttonGfxWidth, self.gui.lines[7], self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
+			self.gui.changeTankNegButton = BshButton:new('arrowLeft', 'changeTank', -1, 0, 0, self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
+			self.gui.changeTankPosButton = BshButton:new('arrowRight', 'changeTank', 1, 0, 0, self.gui.buttonGfxWidth, self.gui.buttonGfxHeight);
 		end;
 	else
 		self.activeTank = false;
@@ -706,24 +649,21 @@ function BunkerSilosHud:loadMap(name)
 
 
 	-- TOP SECTION SELECTION
-	local margin = self.gui.buttonGfxWidth;
 	-- BGA button
 	local textWidth = getTextWidth(self.gui.fontSize, g_i18n:getText('BUNKERSILOS_BGA'));
-	self.gui.topSectionBgaTextX = self.gui.topIconsPosX[1] - margin - textWidth;
-	local iconX = self.gui.topSectionBgaTextX - self.gui.buttonGfxWidth * 1.25;
 	local buttonWidth = self.gui.buttonGfxWidth + textWidth;
-	self.gui.topSectionButtonBga = BshButton:new('radioDeselected', 'setTopSection', BunkerSilosHud.TOPSECTION_BGA, iconX, self.gui.upperLineY, self.gui.buttonGfxWidth, self.gui.buttonGfxHeight, buttonWidth, self.gui.buttonGfxHeight);
+	self.gui.topSectionButtonBga = BshButton:new('radioDeselected', 'setTopSection', BunkerSilosHud.TOPSECTION_BGA, 0, 0, self.gui.buttonGfxWidth, self.gui.buttonGfxHeight, buttonWidth, self.gui.buttonGfxHeight);
 
 	-- Silos button
 	textWidth = getTextWidth(self.gui.fontSize, g_i18n:getText('BUNKERSILOS_SILOS'));
-	self.gui.topSectionSilosTextX = iconX - margin * 0.75 - textWidth;
-	iconX = self.gui.topSectionSilosTextX - self.gui.buttonGfxWidth * 1.25;
 	buttonWidth = self.gui.buttonGfxWidth + textWidth;
-	self.gui.topSectionButtonSilos = BshButton:new('radioSelected', 'setTopSection', BunkerSilosHud.TOPSECTION_SILOS, iconX, self.gui.upperLineY, self.gui.buttonGfxWidth, self.gui.buttonGfxHeight, buttonWidth, self.gui.buttonGfxHeight);
+	self.gui.topSectionButtonSilos = BshButton:new('radioSelected', 'setTopSection', BunkerSilosHud.TOPSECTION_SILOS, 0, 0, self.gui.buttonGfxWidth, self.gui.buttonGfxHeight, buttonWidth, self.gui.buttonGfxHeight);
 
 	self:setTopSection(BunkerSilosHud.TOPSECTION_SILOS);
 
 
+	-- ##### SET GRAPHICS POSITION
+	self:setGuiPositions();
 
 	-- stop vehicle/player camera movement if mouse active
 	if not VehicleCamera.bshMouseInserted then
@@ -738,6 +678,154 @@ function BunkerSilosHud:loadMap(name)
 
 	self.initialized = true;
 	print(('## BunkerSilosHud v%s by %s loaded'):format(BunkerSilosHud.version, BunkerSilosHud.author));
+end;
+
+function BunkerSilosHud:setGuiPositions()
+	self.gui.x2 = self.gui.x1 + self.gui.width;
+	self.gui.y2 = self.gui.y1 + self.gui.height;
+
+	self.gui.contentMinX = self.gui.x1 + self.gui.hPadding;
+	self.gui.contentMaxX = self.gui.x1 + self.gui.width - self.gui.hPadding;
+	self.gui.contentCenterX = self.gui.x1 + self.gui.width * 0.5;
+
+	self.gui.upperLineY = self.gui.y1 + pxToNormal(210, 'y');
+
+	self.gui.lines = {};
+	-- Main title
+	self.gui.lines[0] = self.gui.y1 + pxToNormal(212, 'y');
+	-- Silos / BGA
+	self.gui.lines[1] = self.gui.lines[0] - pxToNormal(22, 'y');
+	self.gui.lines[2] = self.gui.lines[1] - pxToNormal(20, 'y');
+	self.gui.lines[3] = self.gui.lines[2] - pxToNormal(20, 'y');
+	self.gui.lines[4] = self.gui.lines[3] - pxToNormal(20, 'y');
+	self.gui.lines[5] = self.gui.lines[4] - pxToNormal(20, 'y');
+	self.gui.lines[6] = self.gui.y1 + pxToNormal(61, 'y');
+	-- Liquid manure tanks
+	self.gui.lines[7] = self.gui.y1 + pxToNormal(42, 'y');
+	self.gui.lines[8] = self.gui.lines[7] - pxToNormal(20, 'y');
+
+	self.gui.barBorderRightPosX = self.gui.contentMaxX - self.gui.barBorderWidth;
+	self.gui.barMaxX = self.gui.contentMaxX - (self.gui.barBorderWidth * 2);
+
+	-- Liquid manure tank bar graph
+	self.gui.tankBarBorderLeftPosX = self.gui.contentMinX;
+	self.gui.tankBarMinX = self.gui.tankBarBorderLeftPosX + (self.gui.barBorderWidth * 2);
+	self.gui.tankBarMaxWidth = self.gui.barMaxX - self.gui.tankBarMinX;
+
+	-- BGA bunker fill level bar graph
+	local text = g_i18n:getText('BUNKERSILOS_BGA_BUNKERFILLLEVEL'):format('00,0', '00,0', '100,0');
+	if self.complexBgaInstalled then
+		self.gui.bgaBunkerFillLevelBarBorderLeftPosX, self.gui.bgaBunkerFillLevelBarMinX, self.gui.bgaBunkerFillLevelBarMaxWidth = self:getBarDimensionsFromPrecedingText(text);
+	else
+		self.gui.bgaBunkerFillLevelBarBorderLeftPosX, self.gui.bgaBunkerFillLevelBarMinX, self.gui.bgaBunkerFillLevelBarMaxWidth = self.gui.tankBarBorderLeftPosX, self.gui.tankBarMinX, self.gui.tankBarMaxWidth;
+	end;
+
+	-- BGA fermenter TS bar graph
+	local text = g_i18n:getText('BUNKERSILOS_BGA_FERMENTERTS'):format('00,00');
+	self.gui.bgaFermenterDrySubstanceBarBorderLeftPosX, self.gui.bgaFermenterDrySubstanceBarMinX, self.gui.bgaFermenterDrySubstanceBarMaxWidth = self:getBarDimensionsFromPrecedingText(text);
+	local maxDS, optimumDS = 0.16, 0.1;
+	local optimumRelativePct = optimumDS / maxDS;
+	self.gui.bgaFermenterDrySubstanceBarOptimumPosX = self.gui.bgaFermenterDrySubstanceBarMinX + (self.gui.bgaFermenterDrySubstanceBarMaxWidth * optimumRelativePct) - (self.gui.barBorderWidth * 0.5);
+
+	-- BGA bunker bonus fill level bar graph
+	local text = ("%s: 100'000/100'000 %s (100.0%%)"):format(g_i18n:getText('BUNKERSILOS_BGA_BUNKERBONUS'), g_i18n:getText('fluid_unit_short'));
+	self.gui.bgaBunkerBonusFillLevelBarBorderLeftPosX, self.gui.bgaBunkerBonusFillLevelBarMinX, self.gui.bgaBunkerBonusFillLevelBarMaxWidth = self:getBarDimensionsFromPrecedingText(text);
+
+
+	self.gui.background:setPosition(self.gui.x1, self.gui.y1);
+	self.gui.effects:setPosition(self.gui.x1, self.gui.y1);
+
+	--							x1					  x2					y1				   y2
+	self.gui.topSectionArea = { self.gui.contentMinX, self.gui.contentMaxX, self.gui.lines[6], self.gui.lines[1] + self.gui.buttonGfxHeight };
+	self.gui.tankArea		= { self.gui.contentMinX, self.gui.contentMaxX, self.gui.lines[8], self.gui.lines[7] + self.gui.buttonGfxHeight };
+
+	self.gui.topIconsPosX = {
+		[1] = self.gui.contentMaxX - self.gui.buttonGfxWidth * 3.2;
+		[2] = self.gui.contentMaxX - self.gui.buttonGfxWidth * 2.2;
+		[3] = self.gui.contentMaxX - self.gui.buttonGfxWidth;
+	};
+
+	self.gui.mouseWheel:setPosition(self.gui.topIconsPosX[1], self.gui.upperLineY);
+	self.gui.warning:setPosition(self.gui.topIconsPosX[2], self.gui.upperLineY);
+	self.gui.closeHudButton:setPosition(self.gui.topIconsPosX[3], self.gui.upperLineY);
+
+	-- set movingPlanes box position
+	for _,silo in ipairs(self.silos) do
+		for i,mp in ipairs(silo.movingPlanes) do
+			mp.boxX = self.gui.contentMinX + (i-1)*(silo.boxWidth + self.gui.boxMargin);
+			mp.boxCenterX = mp.boxX + silo.boxWidth * 0.5;
+		end;
+	end;
+
+	-- set BGAs graph position
+	for _,bga in ipairs(self.bgas) do
+		if bga.tsGraph then
+			bga.tsGraph.left = self.gui.contentMinX;
+			bga.tsGraph.bottom = self.gui.lines[6];
+		end;
+
+		-- reinitialize fill level bars position calculation
+		bga.bunkerCapacity = nil;
+		bga.bonusCapacity = nil;
+	end;
+
+	-- set liquid manure tanks bar position
+	for _,tank in ipairs(self.tanks) do
+		tank.fillLevelTxtPosX = self.gui.contentMinX + getTextWidth(self.gui.fontSize, tank.name .. ':') + self.gui.buttonGfxWidth;
+	end;
+
+	-- set nav buttons position
+	if self.numBgas > 1 then
+		self.gui.changeBgaNegButton:setPosition(self.gui.contentMinX, self.gui.lines[1]);
+		self.gui.changeBgaPosButton:setPosition(self.gui.contentMaxX - self.gui.buttonGfxWidth, self.gui.lines[1]);
+	end;
+	if self.numSilos > 1 then
+		self.gui.changeSiloNegButton:setPosition(self.gui.contentMinX, self.gui.lines[1]);
+		self.gui.changeSiloPosButton:setPosition(self.gui.contentMaxX - self.gui.buttonGfxWidth, self.gui.lines[1]);
+	end;
+	if self.numTanks > 1 then
+		self.gui.changeTankNegButton:setPosition(self.gui.contentMinX, self.gui.lines[7]);
+		self.gui.changeTankPosButton:setPosition(self.gui.contentMaxX - self.gui.buttonGfxWidth, self.gui.lines[7]);
+	end;
+
+	-- set top section selection buttons position
+	local margin = self.gui.buttonGfxWidth;
+	-- BGA button
+	local textWidth = getTextWidth(self.gui.fontSize, g_i18n:getText('BUNKERSILOS_BGA'));
+	self.gui.topSectionBgaTextX = self.gui.topIconsPosX[1] - margin - textWidth;
+	local iconX = self.gui.topSectionBgaTextX - self.gui.buttonGfxWidth * 1.25;
+	local buttonWidth = self.gui.buttonGfxWidth + textWidth;
+	self.gui.topSectionButtonBga:setPosition(iconX, self.gui.upperLineY);
+
+	-- Silos button
+	textWidth = getTextWidth(self.gui.fontSize, g_i18n:getText('BUNKERSILOS_SILOS'));
+	self.gui.topSectionSilosTextX = iconX - margin * 0.75 - textWidth;
+	iconX = self.gui.topSectionSilosTextX - self.gui.buttonGfxWidth * 1.25;
+	buttonWidth = self.gui.buttonGfxWidth + textWidth;
+	self.gui.topSectionButtonSilos:setPosition(iconX, self.gui.upperLineY);
+end;
+
+function BunkerSilosHud:moveGui(dx, dy)
+	if dx ~= 0 or dy ~= 0 then
+		self.gui.x1 = getFullPx(Utils.clamp(self.gui.x1 + dx, 0, 1 - self.gui.width), 'x');
+		self.gui.y1 = getFullPx(Utils.clamp(self.gui.y1 + dy, 0, 1 - self.gui.height), 'y');
+
+		self:setGuiPositions();
+	end;
+
+	self.gui.background:setColor(1, 1, 1, 1);
+	self.gui.background.hasDragDropColor = false;
+	self.gui.background.origPos = nil;
+	self.gui.dragDropMouseDown = nil;
+end;
+
+function BunkerSilosHud:dragDropUpdateBackground(posX, posY)
+	if not self.gui.background.hasDragDropColor then
+		self.gui.background:setColor(1, 0, 0, 0.6);
+		self.gui.background.hasDragDropColor = true;
+	end;
+	local dx, dy = posX - self.gui.dragDropMouseDown[1], posY - self.gui.dragDropMouseDown[2];
+	self.gui.background:setPosition(self.gui.background.origPos[1] + dx, self.gui.background.origPos[2] + dy);
 end;
 
 function BunkerSilosHud:cancelMouseEvent(superFunc, posX, posY, isDown, isUp, button)
@@ -893,6 +981,10 @@ function BunkerSilosHud:draw()
 	local g = self.gui;
 
 	g.background:render();
+	if g.dragDropMouseDown and g.background.hasDragDropColor then -- drag & drop -> only render background
+		return;
+	end;
+
 	setTextColor(unpack(g.colors.text));
 	setTextBold(true);
 	renderText(g.contentMinX, g.lines[0], g.fontSizeTitle, g_i18n:getText('BUNKERSILOS_TITLE'));
@@ -1438,67 +1530,94 @@ end;
 
 function BunkerSilosHud:mouseEvent(posX, posY, isDown, isUp, mouseButton)
 	BunkerSilosHud.canScroll = false;
-	if self.gui.hudState ~= BunkerSilosHud.HUDSTATE_INTERACTIVE or not self:mouseIsInArea(posX, posY, self.gui.x1, self.gui.x2, self.gui.y1, self.gui.y2) then
+	if self.gui.hudState ~= BunkerSilosHud.HUDSTATE_INTERACTIVE then
 		return;
 	end;
 
+	local isOnGui = self:mouseIsInArea(posX, posY, self.gui.x1, self.gui.x2, self.gui.y1, self.gui.y2);
+
 	-- CLICKING (up)
-	if isUp and mouseButton == Input.MOUSE_BUTTON_LEFT then
-		for _,button in pairs(self.gui.buttons) do
-			button.isClicked = false;
-			button.isHovered = false;
-			if button.isVisible and self:mouseIsOnButton(posX, posY, button) then
-				button.isHovered = true;
-				BunkerSilosHud[button.fn](self, button.prm);
-				break; --no need to check the rest of the buttons
+	if isUp and mouseButton == Input.MOUSE_BUTTON_LEFT then 
+		-- drag & drop release
+		if self.gui.dragDropMouseDown then
+			local dx, dy = posX - self.gui.dragDropMouseDown[1], posY - self.gui.dragDropMouseDown[2];
+			self:moveGui(dx, dy);
+			return;
+		end;
+
+		-- button click
+		if isOnGui then
+			for _,button in pairs(self.gui.buttons) do
+				button.isClicked = false;
+				button.isHovered = false;
+				if button.isVisible and self:mouseIsOnButton(posX, posY, button) then
+					button.isHovered = true;
+					BunkerSilosHud[button.fn](self, button.prm);
+					break; --no need to check the rest of the buttons
+				end;
 			end;
 		end;
 
 	-- CLICKING (down)
-	elseif isDown and mouseButton == Input.MOUSE_BUTTON_LEFT then
+	elseif isDown and mouseButton == Input.MOUSE_BUTTON_LEFT and isOnGui then
+		local hasButtonEvent = false;
 		for _,button in pairs(self.gui.buttons) do
 			button.isHovered = false;
 			button.isClicked = button.isVisible and self:mouseIsOnButton(posX, posY, button);
+			if button.isClicked then
+				hasButtonEvent = true;
+			end;
 		end;
+
+		-- click in general area -> drag & drop
+		if not hasButtonEvent then
+			self.gui.dragDropMouseDown = { posX, posY };
+			self.gui.background.origPos = { self.gui.background.x, self.gui.background.y };
+		end;
+
+	-- DRAG AND DROP MOVEMENT
+	elseif not isUp and not isDown and self.gui.dragDropMouseDown then
+		self:dragDropUpdateBackground(posX, posY);
 
 	-- HOVERING / SCROLLING
 	elseif not isDown then
-		for _,button in pairs(self.gui.buttons) do
-			button.isClicked = false;
-			button.isHovered = button.isVisible and self:mouseIsOnButton(posX, posY, button);
-		end;
-
-		local fn, upParameter, downParameter;
-
-		-- mouse is in top section area
-		if self:mouseIsInArea(posX, posY, unpack(self.gui.topSectionArea)) then
-			if self.gui.activeTopSection == BunkerSilosHud.TOPSECTION_SILOS and self.numSilos > 1 then
-				BunkerSilosHud.canScroll = true;
-				fn, upParameter, downParameter = self.changeSilo, 1, -1;
-			elseif self.gui.activeTopSection == BunkerSilosHud.TOPSECTION_BGA and self.numBgas > 1 then
-				BunkerSilosHud.canScroll = true;
-				fn, upParameter, downParameter = self.changeBga, 1, -1;
+		if isOnGui then
+			for _,button in pairs(self.gui.buttons) do
+				button.isClicked = false;
+				button.isHovered = button.isVisible and self:mouseIsOnButton(posX, posY, button);
 			end;
 
-		-- mouse is in tank area
-		elseif self.numTanks > 1 and self:mouseIsInArea(posX, posY, unpack(self.gui.tankArea)) then
-			BunkerSilosHud.canScroll = true;
-			fn, upParameter, downParameter = self.changeTank, 1, -1;
-		end;
+			local fn, upParameter, downParameter;
 
-		local hideHandTool;
-		if isUp and mouseButton == Input.MOUSE_BUTTON_WHEEL_UP and fn and upParameter then
-			fn(self, upParameter);
-			hideHandTool = true;
-		elseif isUp and mouseButton == Input.MOUSE_BUTTON_WHEEL_DOWN and fn and downParameter then
-			fn(self, downParameter);
-			hideHandTool = true;
+			-- mouse is in top section area
+			if self:mouseIsInArea(posX, posY, unpack(self.gui.topSectionArea)) then
+				if self.gui.activeTopSection == BunkerSilosHud.TOPSECTION_SILOS and self.numSilos > 1 then
+					BunkerSilosHud.canScroll = true;
+					fn, upParameter, downParameter = self.changeSilo, 1, -1;
+				elseif self.gui.activeTopSection == BunkerSilosHud.TOPSECTION_BGA and self.numBgas > 1 then
+					BunkerSilosHud.canScroll = true;
+					fn, upParameter, downParameter = self.changeBga, 1, -1;
+				end;
+
+			-- mouse is in tank area
+			elseif self.numTanks > 1 and self:mouseIsInArea(posX, posY, unpack(self.gui.tankArea)) then
+				BunkerSilosHud.canScroll = true;
+				fn, upParameter, downParameter = self.changeTank, 1, -1;
+			end;
+
+			local hideHandTool;
+			if isUp and mouseButton == Input.MOUSE_BUTTON_WHEEL_UP and fn and upParameter then
+				fn(self, upParameter);
+				hideHandTool = true;
+			elseif isUp and mouseButton == Input.MOUSE_BUTTON_WHEEL_DOWN and fn and downParameter then
+				fn(self, downParameter);
+				hideHandTool = true;
+			end;
+			if hideHandTool and g_currentMission.player ~= nil and g_currentMission.player.currentToolId ~= 0 then
+				-- print('BSH: setTool(nil)');
+				g_currentMission.player:setTool(nil);
+			end;
 		end;
-		if hideHandTool and g_currentMission.player ~= nil and g_currentMission.player.currentToolId ~= 0 then
-			-- print('BSH: setTool(nil)');
-			g_currentMission.player:setTool(nil);
-		end;
-		
 	end;
 end;
 
@@ -1797,15 +1916,27 @@ function BshButton:new(UVsName, fn, parameter, x, y, width, height, clickWidth, 
 
 	self.fn = fn;
 	self.prm = parameter;
-	self.x1 = x;
-	self.x2 = x + (clickWidth or width);
-	self.y1 = y;
-	self.y2 = y + (clickHeight or height);
-	self.isVisible = true;
+	self.clickWidth = clickWidth;
+	self.clickHeight = clickHeight;
+	self.width = width;
+	self.height = height;
+	self:setPosition(x, y);
+	self:setVisible(true);
 
 	BunkerSilosHud.gui.buttons[#BunkerSilosHud.gui.buttons + 1] = self;
 
 	return self;
+end;
+
+function BshButton:setPosition(x, y)
+	self.x1 = x;
+	self.x2 = x + (self.clickWidth or self.width);
+	self.y1 = y;
+	self.y2 = y + (self.clickHeight or self.height);
+
+	if self.overlay then
+		self.overlay:setPosition(x, y);
+	end;
 end;
 
 function BshButton:setVisible(visible)
