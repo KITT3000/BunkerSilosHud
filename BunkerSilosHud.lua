@@ -4,7 +4,7 @@
 -- @description:	A hud that shows the contents of all silos (BGA and cow), including the distribution inside each silo, plus the fill levels of all liquid manure tanks and some BGA data.
 -- @author:			Jakob Tischler
 -- @project start:	13 Jan 2014
--- @date:			26 Jan 2015
+-- @date:			31 Jan 2015
 -- @version:		2.1
 -- @history:		0.98 (25 Feb 2014): * initial release
 -- 					0.99 (02 Mar 2014): * add safety check against impromperly created BunkerSilo triggers (w/o movingPlanes) - you know who you are!
@@ -14,7 +14,7 @@
 --										* GUI update
 --										* add BGA data (especially BGAextension): bunker fill level, bunker/fermenter dry matter, current and historic generator power
 --										* add MP/DS support
---					2.1  (26 Jan 2015): * add support for manure heaps
+--					2.1  (31 Jan 2015): * add support for manure heaps
 --										* add distinction between pigs and cattle
 --										* hud is now draggable via drag+drop
 -- @contact:		jakobgithub -ätt- gmail -dot- com
@@ -383,6 +383,7 @@ function BunkerSilosHud:loadMap(name)
 						fillLevelPctFormatted = '0';
 						capacity = trigger.capacity;
 						capacityFormatted = self:formatNumber(trigger.capacity, 0);
+						unit = g_i18n:getText('fluid_unit_short');
 						name = ('%s %.2d (%s)'):format(g_i18n:getText('BUNKERSILOS_TANK'), liquidManureIdx, g_i18n:getText('BUNKERSILOS_TANKTYPE_BGA'));
 					};
 
@@ -420,6 +421,7 @@ function BunkerSilosHud:loadMap(name)
 						fillLevelPctFormatted = '0';
 						capacity = trigger.capacity;
 						capacityFormatted = self:formatNumber(trigger.capacity, 0);
+						unit = g_i18n:getText('fluid_unit_short');
 						name = ('%s %.2d (%s)'):format(g_i18n:getText('BUNKERSILOS_TANK'), liquidManureIdx, g_i18n:getText('BUNKERSILOS_TANKTYPE_COWS'));
 					};
 
@@ -447,12 +449,14 @@ function BunkerSilosHud:loadMap(name)
 						onCreateIndex = i;
 						triggerId = triggerId;
 						isCowsManure = true;
+						isManure = true;
 						fillLevel = trigger.fillLevel;
 						fillLevelFormatted = '0';
 						fillLevelPct = 0;
 						fillLevelPctFormatted = '0';
 						capacity = trigger.capacity;
-						capacityFormatted = self:formatNumber(trigger.capacity, 0);
+						capacityFormatted = self:formatNumber(trigger.capacity * 0.001, 0);
+						unit = 'm3';
 						name = ('%s %.2d (%s)'):format(g_i18n:getText('Manure_storage'), manureIdx, g_i18n:getText('BUNKERSILOS_TANKTYPE_COWS'));
 					};
 
@@ -484,6 +488,7 @@ function BunkerSilosHud:loadMap(name)
 					fillLevelPctFormatted = '0';
 					capacity = onCreateObject.capacity;
 					capacityFormatted = self:formatNumber(onCreateObject.capacity, 0);
+					unit = g_i18n:getText('fluid_unit_short');
 					name = ('%s %.2d (%s)'):format(g_i18n:getText('BUNKERSILOS_TANK'), liquidManureIdx, g_i18n:getText('BUNKERSILOS_TANKTYPE_MANURESTORAGE'));
 				};
 
@@ -518,6 +523,7 @@ function BunkerSilosHud:loadMap(name)
 						fillLevelPctFormatted = '0';
 						capacity = trigger.capacity;
 						capacityFormatted = self:formatNumber(trigger.capacity, 0);
+						unit = g_i18n:getText('fluid_unit_short');
 					};
 
 					local animalType = 'pigs';
@@ -554,12 +560,14 @@ function BunkerSilosHud:loadMap(name)
 						onCreateIndex = i;
 						-- triggerId = triggerId;
 						isPigsManure = true;
+						isManure = true;
 						fillLevel = trigger.FillLvl;
 						fillLevelFormatted = '0';
 						fillLevelPct = 0;
 						fillLevelPctFormatted = '0';
 						capacity = trigger.capacity;
-						capacityFormatted = self:formatNumber(trigger.capacity, 0);
+						capacityFormatted = self:formatNumber(trigger.capacity * 0.001, 0);
+						unit = 'm3';
 					};
 
 					local animalType = 'pigs';
@@ -1429,7 +1437,11 @@ function BunkerSilosHud:renderTankData(data)
 
 	if fillLevel ~= data.fillLevel then
 		data.fillLevel = fillLevel;
-		data.fillLevelFormatted = self:formatNumber(data.fillLevel, 0);
+		if data.unit == 'm3' then
+			data.fillLevelFormatted = self:formatNumber(data.fillLevel * 0.001, 1);
+		else
+			data.fillLevelFormatted = self:formatNumber(data.fillLevel, 0);
+		end;
 		data.fillLevelPct = data.fillLevel / data.capacity + 0.00001;
 		data.fillLevelPctFormatted = self:formatNumber(data.fillLevelPct * 100, 1);
 		self:debug(('BSH tank %q: updated fillLevel: fillLevelFormatted=%q, fillLevelPctFormatted=%q'):format(data.name, data.fillLevelFormatted, data.fillLevelPctFormatted));
@@ -1447,7 +1459,7 @@ function BunkerSilosHud:renderTankData(data)
 	setTextBold(false);
 
 	-- Line 7 (fill level)
-	renderText(x2, g.lines[7], g.fontSize, ('%s: %s / %s %s (%s%%)'):format(g_i18n:getText('BUNKERSILOS_FILLLEVEL'), data.fillLevelFormatted, data.capacityFormatted, g_i18n:getText('fluid_unit_short'), data.fillLevelPctFormatted));
+	renderText(x2, g.lines[7], g.fontSize, ('%s: %s / %s %s (%s%%)'):format(g_i18n:getText('BUNKERSILOS_FILLLEVEL'), data.fillLevelFormatted, data.capacityFormatted, data.unit, data.fillLevelPctFormatted));
 
 	-- Line 8 (Bar)
 	renderOverlay(self.barBgOverlayId, g.tankBarMinX, g.lines[8], g.tankBarMaxWidth, g.barHeight);
@@ -1835,7 +1847,7 @@ local origServerSendObjects = Server.sendObjects;
 function Server:sendObjects(connection, x, y, z, viewDistanceCoeff)
 	connection:sendEvent(BunkerSilosHudJoinEvent:new());
 	return origServerSendObjects(self, connection, x, y, z, viewDistanceCoeff);
-end
+end;
 
 BunkerSilosHudJoinEvent = {};
 BunkerSilosHudJoinEvent_mt = Class(BunkerSilosHudJoinEvent, Event);
@@ -1845,11 +1857,11 @@ function BunkerSilosHudJoinEvent:emptyNew()
 	local self = Event:new(BunkerSilosHudJoinEvent_mt);
 	self.className = BunkerSilosHud.modName .. '.BunkerSilosHudJoinEvent';
 	return self;
-end
+end;
 function BunkerSilosHudJoinEvent:new()
 	local self = BunkerSilosHudJoinEvent:emptyNew()
 	return self;
-end
+end;
 
 function BunkerSilosHudJoinEvent:writeStream(streamId, connection)
 	if not connection:getIsServer() then
@@ -1888,7 +1900,6 @@ function BunkerSilosHudJoinEvent:readStream(streamId, connection)
 		end;
 	end;
 end;
-
 
 -- ################################################################################
 -- Debug
