@@ -27,6 +27,7 @@
 			<es>Abrir/cerrar el BunkerSilosHud</es>
 			<fr>Ouvrir/fermer le BunkerSilosHud</fr>
 			<it>Aprire/chiudere il BunkerSilosHud</it>
+			<pl>Pokaż/ukryj BunkerSilosHud</pl>
 		</text>
 		<text name="BUNKERSILOS_SHOWHUD">
 			<en>Show BunkerSilosHud</en>
@@ -34,6 +35,7 @@
 			<es>Abrir el BunkerSilosHud</es>
 			<fr>Ouvrir le BunkerSilosHud</fr>
 			<it>Aprire il BunkerSilosHud</it>
+			<pl>Pokaż BunkerSilosHud</pl>
 		</text>
 		<text name="BUNKERSILOS_HIDEHUD">
 			<en>Hide BunkerSilosHud</en>
@@ -41,6 +43,7 @@
 			<es>Cerrar el BunkerSilosHud</es>
 			<fr>Fermer le BunkerSilosHud</fr>
 			<it>Chiudere il BunkerSilosHud</it>
+			<pl>Ukryh BunkerSilosHud</pl>
 		</text>
 		<text name="BUNKERSILOS_HIDEMOUSE">
 			<en>Hide mouse cursor</en>
@@ -48,12 +51,14 @@
 			<es>Ocultar el cursor</es>
 			<fr>Cacher le curseur</fr>
 			<it>Nascondere il cursore</it>
+			<pl>Ukryj kursor myszy</pl>
 		</text>
 
 		<!-- HUD content -->
 		<text name="BUNKERSILOS_TITLE">
 			<en>Silo Information Display</en>
 			<de>Silo-Informations-Display</de>
+			<pl>Informacje o silosach</pl>
 		</text>
 		<text name="BUNKERSILOS_BGA">
 			<en>BGA</en>
