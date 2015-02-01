@@ -8,6 +8,7 @@
 	<description>
 		<en><![CDATA[An overview display that shows the contents of the BGA, bunker silos and liquid manure tanks. If BGAextension is installed, important data concerning dry matter and generator power are displayed as well.]]></en>
 		<de><![CDATA[Ein Übersichts-Display für die BGA, Bunkersilos und Gülletanks. Ist BGAextension installiert, werden auch wichtigen Daten zur Trockensubstanz und Generatorleistung angezeigt.]]></de>
+		<pl><![CDATA[Hud pokazuje zawartość silosów bunkrowych i zbirników na gnojówke. Jeśli posiadasz mod "BGAextension", ważne dane dotyczące suchej masy i generatora mocy są również wyświetlane.]]></pl>
 	</description>
 	<iconFilename>res/store_bsh.png</iconFilename>
 	<multiplayer supported="true" />
@@ -27,6 +28,7 @@
 			<es>Abrir/cerrar el BunkerSilosHud</es>
 			<fr>Ouvrir/fermer le BunkerSilosHud</fr>
 			<it>Aprire/chiudere il BunkerSilosHud</it>
+			<pl>Pokaż/Ukryj BunkerSilosHud</pl>
 		</text>
 		<text name="BUNKERSILOS_SHOWHUD">
 			<en>Show BunkerSilosHud</en>
@@ -34,6 +36,7 @@
 			<es>Abrir el BunkerSilosHud</es>
 			<fr>Ouvrir le BunkerSilosHud</fr>
 			<it>Aprire il BunkerSilosHud</it>
+			<pl>Pokaż BunkerSilosHud</pl>
 		</text>
 		<text name="BUNKERSILOS_HIDEHUD">
 			<en>Hide BunkerSilosHud</en>
@@ -41,6 +44,7 @@
 			<es>Cerrar el BunkerSilosHud</es>
 			<fr>Fermer le BunkerSilosHud</fr>
 			<it>Chiudere il BunkerSilosHud</it>
+			<pl>Ukryj BunkerSilosHud</pl>
 		</text>
 		<text name="BUNKERSILOS_HIDEMOUSE">
 			<en>Hide mouse cursor</en>
@@ -48,12 +52,14 @@
 			<es>Ocultar el cursor</es>
 			<fr>Cacher le curseur</fr>
 			<it>Nascondere il cursore</it>
+			<pl>Ukryj kursor myszy</pl>
 		</text>
 
 		<!-- HUD content -->
 		<text name="BUNKERSILOS_TITLE">
 			<en>Silo Information Display</en>
 			<de>Silo-Informations-Display</de>
+			<pl>Informacje o silosach</pl>
 		</text>
 		<text name="BUNKERSILOS_BGA">
 			<en>BGA</en>
@@ -61,6 +67,7 @@
 			<es>Biogás</es>
 			<fr>Biogaz</fr>
 			<it>Biogas</it>
+			<pl>Biogazownia</pl>
 		</text>
 		<text name="BUNKERSILOS_BGA_BUNKERFILLLEVEL">
 			<en>Bunker fill level: %s/%sm3 (%s%%)</en>
@@ -68,6 +75,7 @@
 			<es>Nivel del búnker: %s/%sm3 (%s%%)</es>
 			<fr>Niveau du bunker: %s/%sm3 (%s%%)</fr>
 			<it>Livello del bunker: %s/%sm3 (%s%%)</it>
+			<pl>Poziom wypełnienia zbiornika: %s/%sm3 (%s%%)</pl>
 		</text>
 		<text name="BUNKERSILOS_BGA_BUNKERTS">
 			<en>Bunker DM: %s%%</en>
@@ -75,6 +83,7 @@
 			<es>Búnker MS: %s%%</es>
 			<fr>Bunker MS: %s%%</fr>
 			<it>Bunker MS: %s%%</it>
+			<pl>Silos suchej masy: %s%%</pl>
 		</text>
 		<text name="BUNKERSILOS_BGA_BUNKERBONUS">
 			<en>Bonus</en>
@@ -82,6 +91,7 @@
 			<es>Prima</es>
 			<fr>Premio</fr>
 			<it>Prime</it>
+			<pl>Bonus</pl>
 		</text>
 		<text name="BUNKERSILOS_BGA_BUNKEREMPTYTIME">
 			<en>Empty in %s h</en>
@@ -89,6 +99,7 @@
 			<es>Vacío in %s h</es>
 			<fr>Vide in %s h</fr>
 			<it>Vuoto in %s h</it>
+			<pl>Pusty w %s h</pl>
 		</text>
 		<text name="BUNKERSILOS_BGA_POWER_FEEDINGRATE">
 			<en>Power: %s kW, feeding rate: %s%%</en>
@@ -96,6 +107,7 @@
 			<es>Potencia: %s kW, alimentación: %s%%</es>
 			<fr>Puissance: %s kW, alimentation: %s%%</fr>
 			<it>Potenza: %s kW, rifornimento: %s%%</it>
+			<pl>Moc: %s kW, zaopatrzenie: %s%%</pl>
 		</text>
 		<text name="BUNKERSILOS_BGA_FERMENTERTS">
 			<en>Fermenter DM: %s%%</en>
@@ -103,6 +115,7 @@
 			<es>Fermentador MS: %s%%</es>
 			<fr>Fermenteur MS: %s%%</fr>
 			<it>Fermentatore MS: %s%%</it>
+			<pl>Fermentacja suchej masy: %s%%</pl>
 		</text>
 		<text name="BUNKERSILOS_NOBGAS">
 			<en>No BGA data available</en>
@@ -110,6 +123,7 @@
 			<es>Faltan datos de biogás</es>
 			<fr>Il faux les données de biogaz</fr>
 			<it>Dati di biogas mancano</it>
+			<pl>Brak danych o Biogazowni</pl>
 		</text>
 		<text name="BUNKERSILOS_BGAINACTIVE">
 			<en>BGA inoperative</en>
@@ -117,6 +131,7 @@
 			<es>BGA inoperante</es>
 			<fr>BGA inopérante</fr>
 			<it>BGA inoperante</it>
+			<pl>Biogazownia niepracuje</pl>
 		</text>
 
 		<!-- SILOS -->
@@ -126,6 +141,7 @@
 			<es>Silo</es>
 			<fr>Silo</fr>
 			<it>Silo</it>
+			<pl>Silos</pl>
 		</text>
 		<text name="BUNKERSILOS_SILOS">
 			<en>Silos</en>
@@ -133,6 +149,7 @@
 			<es>Silos</es>
 			<fr>Silos</fr>
 			<it>Silos</it>
+			<pl>Silosy</pl>
 		</text>
 		<text name="BUNKERSILOS_STATE">
 			<en>State</en>
@@ -140,6 +157,7 @@
 			<es>Estado</es>
 			<fr>État</fr>
 			<it>Stato</it>
+			<pl>Stan</pl>
 		</text>
 		<text name="BUNKERSILOS_FILLLEVEL">
 			<en>Fill level</en>
@@ -148,6 +166,7 @@
 			<fr>Niveau</fr>
 			<!--<it>Completa livello</it>-->
 			<it>Livello</it>
+			<pl>Wypełnione</pl>
 		</text>
 		<text name="BUNKERSILOS_CAPACITY">
 			<en>Capacity</en>
@@ -155,6 +174,7 @@
 			<es>Capacidad</es>
 			<fr>Capacité</fr>
 			<it>Capacità</it>
+			<pl>Pojemność</pl>
 		</text>
 		<text name="BUNKERSILOS_TOBEFILLED">
 			<en>To be filled</en>
@@ -162,6 +182,7 @@
 			<es>Espacio libre</es>
 			<fr>Espace libre</fr>
 			<it>Spazio libero</it>
+			<pl>Do wypełnienia</pl>
 		</text>
 		<text name="BUNKERSILOS_STATE_0">
 			<en>to be filled</en>
@@ -169,6 +190,7 @@
 			<es>se puede llenar</es>
 			<fr>peut être rempli</fr>
 			<it>può essere riempito</it>
+			<pl>do wypełnienia</pl>
 		</text>
 		<text name="BUNKERSILOS_STATE_1">
 			<en>fermentation</en>
@@ -176,6 +198,7 @@
 			<es>fermentación</es>
 			<fr>fermentation</fr>
 			<it>fermentazione</it>
+			<pl>frementacja</pl>
 		</text>
 		<text name="BUNKERSILOS_STATE_2">
 			<en>done (silage)</en>
@@ -183,6 +206,7 @@
 			<es>terminado (ensilado)</es>
 			<fr>fini (ensilage)</fr>
 			<it>finito (insilato)</it>
+			<pl>gotowe (kiszonka)</pl>
 		</text>
 		<text name="BUNKERSILOS_ROTTEN">
 			<en>rotten</en>
@@ -190,6 +214,7 @@
 			<es>mohoso</es>
 			<fr>moisi</fr>
 			<it>marcio</it>
+			<pl>zgniłe</pl>
 		</text>
 		<text name="BUNKERSILOS_COMPACT">
 			<en>compaction</en>
@@ -197,6 +222,7 @@
 			<es>compr.</es>
 			<fr>tass.</fr>
 			<it>compr.</it>
+			<pl>ubite</pl>
 		</text>
 		<text name="BUNKERSILOS_FERMENTATION_PROGRESS">
 			<en>Fermentation progress</en>
@@ -204,6 +230,7 @@
 			<es>Progreso de la fermentación</es>
 			<fr>Progrès de la fermentation</fr>
 			<it>Progressi fermentazione</it>
+			<pl>Postęp fermentacji</pl>
 		</text>
 		<text name="BUNKERSILOS_NOSILOS">
 			<en>No silo data available</en>
@@ -211,6 +238,7 @@
 			<es>Faltan datos de los silos</es>
 			<fr>Il faux les données des silos</fr>
 			<it>Dati dei silos mancano</it>
+			<pl>Brak danych o silosie</pl>
 		</text>
 		<text name="BUNKERSILOS_TANK">
 			<en>Liquid manure</en>
@@ -218,6 +246,7 @@
 			<es>Estiércol líquido</es>
 			<fr>Engrais liquide</fr>
 			<it>Concime liquido</it>
+			<pl>Gnojówka</pl>
 		</text>
 		<text name="BUNKERSILOS_TANKTYPE_BGA">
 			<en>biogas</en>
@@ -225,6 +254,7 @@
 			<es>biogás</es>
 			<fr>biogaz</fr>
 			<it>biogas</it>
+			<pl>BGA</pl>
 		</text>
 		<text name="BUNKERSILOS_TANKTYPE_COWS">
 			<en>cows</en>
@@ -232,6 +262,7 @@
 			<es>vacas</es>
 			<fr>vaches</fr>
 			<it>mucche</it>
+			<pl>krowy</pl>
 		</text>
 		<text name="BUNKERSILOS_TANKTYPE_MANURESTORAGE">
 			<en>storage</en>
@@ -239,6 +270,7 @@
 			<es>almacenamiento</es>
 			<fr>entreposage</fr>
 			<it>stoccaggio</it>
+			<pl>magazyn</pl>
 		</text>
 		<text name="BUNKERSILOS_TANKTYPE_PIGS">
 			<en>pigs</en>
@@ -246,6 +278,7 @@
 			<es>cerdos</es>
 			<fr>porcs</fr>
 			<it>suini</it>
+			<pl>świnie</pl>
 		</text>
 		<text name="BUNKERSILOS_TANKTYPE_CATTLE">
 			<en>cattle</en>
@@ -253,6 +286,7 @@
 			<es>vacunos</es>
 			<fr>bovins</fr>
 			<it>bovini</it>
+			<pl>bydło</pl>
 		</text>
 		<text name="BUNKERSILOS_NOTANKS">
 			<en>No liquid manure tank data available</en>
@@ -260,6 +294,7 @@
 			<es>Faltan datos de estiércol líquido</es>
 			<fr>Il faux les données d'engrais liquide</fr>
 			<it>Dati di concime liquido mancano</it>
+			<pl>Brak danych o zbiorniku gnojówki</pl>
 		</text>
 		<text name="BUNKERSILOS_TIME_LEFT">
 			<en>%s h left</en>
@@ -267,6 +302,7 @@
 			<es>%s h restante</es>
 			<fr>%s h restant</fr>
 			<it>%s rimanenti</it>
+			<pl>%s h do zakończenia</pl>
 		</text>
 	</l10n>
 </modDesc>
