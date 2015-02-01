@@ -75,7 +75,7 @@
 			<es>Nivel del búnker: %s/%sm3 (%s%%)</es>
 			<fr>Niveau du bunker: %s/%sm3 (%s%%)</fr>
 			<it>Livello del bunker: %s/%sm3 (%s%%)</it>
-			<pl>Poziom wypełnienia zbiornika: %s/%sm3 (%s%%)</pl>
+			<pl>Wypełnione: %s/%sm3 (%s%%)</pl>
 		</text>
 		<text name="BUNKERSILOS_BGA_BUNKERTS">
 			<en>Bunker DM: %s%%</en>
